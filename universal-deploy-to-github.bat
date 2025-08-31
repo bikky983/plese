@@ -31,6 +31,33 @@ if %errorlevel% neq 0 (
 echo ✅ Git is installed!
 echo.
 
+REM Check if directory has any files
+echo ========================================
+echo  📁 Checking project directory...
+echo ========================================
+echo.
+
+REM Count all files (excluding hidden ones)
+set file_count_check=0
+for /f %%i in ('dir /b /a-d 2^>nul ^| find /c /v ""') do set file_count_check=%%i
+
+if %file_count_check% equ 0 (
+    echo ❌ ERROR: No files found in current directory!
+    echo.
+    echo Make sure you're running this script in a project folder that contains:
+    echo - Source code files
+    echo - Configuration files  
+    echo - At least one project file
+    echo.
+    echo Current directory: %cd%
+    echo.
+    pause
+    exit /b 1
+)
+
+echo ✅ Found %file_count_check% files in project directory
+echo.
+
 REM Auto-detect project type and suggest names
 echo ========================================
 echo  🔍 Auto-detecting project type...
@@ -273,15 +300,17 @@ echo Checking for existing content on GitHub...
 git fetch origin main >nul 2>&1
 
 if %errorlevel% equ 0 (
-    echo Found existing content. Syncing...
+    echo ✅ Found existing repository on GitHub!
+    echo.
+    echo 🔄 Syncing with existing content...
     git pull origin main --allow-unrelated-histories --strategy=recursive -X ours >nul 2>&1
     if %errorlevel% neq 0 (
-        echo Trying alternative sync method...
+        echo ⚠️ Sync had conflicts. Trying alternative method...
         git reset --soft HEAD~1 >nul 2>&1
     )
     echo ✅ Synced with existing repository!
 ) else (
-    echo ✅ No existing content found. Ready for new repository!
+    echo ✅ Repository doesn't exist yet or is empty. Ready for new upload!
 )
 
 echo.
@@ -294,13 +323,23 @@ echo Adding all project files...
 git add .
 
 echo.
-echo 📊 Files to be uploaded:
-git status --short | head -20
+echo 📊 Checking what files are staged...
+
+REM Count staged files
+for /f %%i in ('git status --porcelain ^| find /c /v ""') do set file_count=%%i
+
+echo 📁 Total files to upload: %file_count%
 echo.
 
-REM Count files
-for /f %%i in ('git status --porcelain ^| find /c /v ""') do set file_count=%%i
-echo 📁 Total files to upload: %file_count%
+if %file_count% gtr 0 (
+    echo 📋 Files to be uploaded:
+    git status --short
+    echo.
+) else (
+    echo 🔍 Checking repository status...
+    git status
+    echo.
+)
 
 REM Show file types
 echo.
@@ -333,9 +372,65 @@ if "%project_type%"=="Shop Builder Platform" (
 
 echo.
 if %file_count% equ 0 (
-    echo ⚠️ No changes to upload. Repository is up to date!
-    pause
-    exit /b 0
+    echo ⚠️ No new changes detected.
+    echo.
+    echo This could mean:
+    echo 1. All files are already committed and pushed
+    echo 2. Repository is up to date
+    echo 3. No files in this directory
+    echo.
+    echo 🔄 What would you like to do?
+    echo [1] Force push anyway ^(updates GitHub with current state^)
+    echo [2] Check what's already committed  
+    echo [3] Add a new file and then upload
+    echo [4] Exit
+    echo.
+    set /p choice="Enter your choice (1-4): "
+    
+    if "!choice!"=="1" (
+        echo.
+        echo 💪 Force pushing current state to GitHub...
+        git push origin main --force
+        if !errorlevel! equ 0 (
+            echo ✅ Force push successful!
+            echo 🔗 Repository: https://github.com/%github_username%/%repo_name%
+        ) else (
+            echo ❌ Force push failed. Check your GitHub credentials and repository access.
+        )
+        echo.
+        pause
+        exit /b 0
+    ) else if "!choice!"=="2" (
+        echo.
+        echo 📋 Currently committed files:
+        git ls-tree -r --name-only HEAD 2>nul | head -20
+        if !errorlevel! neq 0 (
+            echo No commits found yet. Repository is empty.
+        )
+        echo.
+        echo 🔗 Repository: https://github.com/%github_username%/%repo_name%
+        echo.
+        pause
+        exit /b 0
+    ) else if "!choice!"=="3" (
+        echo.
+        echo 📝 Creating a new README.md file to trigger upload...
+        echo # %repo_name% > README.md
+        echo. >> README.md
+        echo This project was uploaded using the Universal GitHub Deploy Script. >> README.md
+        echo. >> README.md
+        echo Project Type: %project_type% >> README.md
+        echo Upload Date: %date% %time% >> README.md
+        git add README.md
+        echo ✅ README.md created and staged!
+        echo.
+        echo 🔄 Now continuing with upload...
+        set file_count=1
+    ) else (
+        echo Exiting...
+        pause
+        exit /b 0
+    )
 )
 
 set /p confirm_upload="🚀 Upload these %file_count% files to GitHub? (y/n): "
