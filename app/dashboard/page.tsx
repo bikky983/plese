@@ -12,7 +12,7 @@ import {
   EyeIcon,
   PencilIcon
 } from "@heroicons/react/24/outline"
-import { auth } from "@/lib/supabase"
+import { auth, isSupabaseConfigured } from "@/lib/supabase"
 import { Shop, Product, shopDB, productDB } from "@/lib/shop-db"
 import { ShopSetupWizard } from "@/components/shop-setup-wizard"
 import { ShopPage } from "@/components/shop-page"
@@ -28,32 +28,50 @@ export default function DashboardPage() {
 
   useEffect(() => {
     const getUser = async () => {
-      const { data: { user }, error } = await auth.getUser()
-      
-      if (error || !user) {
+      try {
+        if (!isSupabaseConfigured()) {
+          console.warn('Supabase is not configured. Redirecting to login.')
+          router.push('/auth/login?error=supabase_not_configured')
+          return
+        }
+
+        const { data: { user }, error } = await auth.getUser()
+        
+        if (error || !user) {
+          router.push('/auth/login')
+          return
+        }
+        
+        setUser(user)
+        
+        // Load user's shop and products
+        const userShop = await shopDB.getUserShop(user.id)
+        if (userShop) {
+          setShop(userShop)
+          const shopProducts = await productDB.getShopProducts(userShop.id)
+          setProducts(shopProducts)
+        }
+        
+        setLoading(false)
+      } catch (err) {
+        console.error('Error in dashboard:', err)
         router.push('/auth/login')
-        return
       }
-      
-      setUser(user)
-      
-      // Load user's shop and products
-      const userShop = await shopDB.getUserShop(user.id)
-      if (userShop) {
-        setShop(userShop)
-        const shopProducts = await productDB.getShopProducts(userShop.id)
-        setProducts(shopProducts)
-      }
-      
-      setLoading(false)
     }
 
     getUser()
   }, [router])
 
   const handleSignOut = async () => {
-    await auth.signOut()
-    router.push('/')
+    try {
+      if (isSupabaseConfigured()) {
+        await auth.signOut()
+      }
+    } catch (err) {
+      console.error('Error signing out:', err)
+    } finally {
+      router.push('/')
+    }
   }
 
   const handleShopSetupComplete = (newShop: Shop) => {

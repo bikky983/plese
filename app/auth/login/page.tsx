@@ -9,7 +9,7 @@ import {
   ArrowRightIcon,
   ExclamationCircleIcon
 } from "@heroicons/react/24/outline"
-import { auth } from "@/lib/supabase"
+import { auth, isSupabaseConfigured } from "@/lib/supabase"
 import { cn } from "@/lib/utils"
 
 export default function LoginPage() {
@@ -25,6 +25,10 @@ export default function LoginPage() {
     setError("")
 
     try {
+      if (!isSupabaseConfigured()) {
+        throw new Error("Authentication is not configured. Please contact support.")
+      }
+
       const { error } = await auth.signIn(email, password)
       if (error) throw error
       
@@ -42,6 +46,10 @@ export default function LoginPage() {
     setError("")
 
     try {
+      if (!isSupabaseConfigured()) {
+        throw new Error("Authentication is not configured. Please contact support.")
+      }
+
       const { error } = await auth.signInWithProvider("google")
       if (error) throw error
     } catch (error: any) {

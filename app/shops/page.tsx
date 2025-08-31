@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { BuildingStorefrontIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline'
 import { Shop } from '@/lib/shop-db'
-import { supabase } from '@/lib/supabase'
+import { supabase, isSupabaseConfigured } from '@/lib/supabase'
 
 export default function ShopsPage() {
   const [shops, setShops] = useState<Shop[]>([])
@@ -15,6 +15,14 @@ export default function ShopsPage() {
   useEffect(() => {
     const loadShops = async () => {
       try {
+        // Check if Supabase is configured
+        if (!isSupabaseConfigured()) {
+          console.warn('Supabase is not configured. Using empty shops list.')
+          setShops([])
+          setLoading(false)
+          return
+        }
+
         const { data, error } = await supabase
           .from('shops')
           .select('*')

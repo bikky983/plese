@@ -11,7 +11,7 @@ import {
   ExclamationCircleIcon,
   CheckCircleIcon
 } from "@heroicons/react/24/outline"
-import { auth } from "@/lib/supabase"
+import { auth, isSupabaseConfigured } from "@/lib/supabase"
 import { cn } from "@/lib/utils"
 
 export default function ResetPasswordPage() {
@@ -74,6 +74,10 @@ export default function ResetPasswordPage() {
     }
 
     try {
+      if (!isSupabaseConfigured()) {
+        throw new Error("Authentication is not configured. Please contact support.")
+      }
+
       const { error } = await auth.updatePassword(password)
       if (error) throw error
       

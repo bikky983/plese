@@ -1,4 +1,4 @@
-import { supabase } from './supabase'
+import { supabase, isSupabaseConfigured } from './supabase'
 
 export interface Shop {
   id: string
@@ -38,6 +38,11 @@ export interface ProductImage {
 export const shopDB = {
   // Get shop by ID (public access)
   getShopById: async (shopId: string): Promise<Shop | null> => {
+    if (!isSupabaseConfigured()) {
+      console.warn('Supabase is not configured')
+      return null
+    }
+
     const { data, error } = await supabase
       .from('shops')
       .select('*')
@@ -53,6 +58,11 @@ export const shopDB = {
   },
   // Get user's shop
   getUserShop: async (userId: string): Promise<Shop | null> => {
+    if (!isSupabaseConfigured()) {
+      console.warn('Supabase is not configured')
+      return null
+    }
+
     const { data, error } = await supabase
       .from('shops')
       .select('*')
@@ -69,6 +79,11 @@ export const shopDB = {
 
   // Create a new shop
   createShop: async (shopData: Omit<Shop, 'id' | 'created_at' | 'updated_at'>): Promise<Shop | null> => {
+    if (!isSupabaseConfigured()) {
+      console.warn('Supabase is not configured')
+      return null
+    }
+
     const { data, error } = await supabase
       .from('shops')
       .insert(shopData)
@@ -85,6 +100,11 @@ export const shopDB = {
 
   // Update shop
   updateShop: async (shopId: string, updates: Partial<Shop>): Promise<Shop | null> => {
+    if (!isSupabaseConfigured()) {
+      console.warn('Supabase is not configured')
+      return null
+    }
+
     const { data, error } = await supabase
       .from('shops')
       .update(updates)
@@ -102,6 +122,11 @@ export const shopDB = {
 
   // Delete shop
   deleteShop: async (shopId: string): Promise<boolean> => {
+    if (!isSupabaseConfigured()) {
+      console.warn('Supabase is not configured')
+      return false
+    }
+
     const { error } = await supabase
       .from('shops')
       .delete()
@@ -120,6 +145,11 @@ export const shopDB = {
 export const productDB = {
   // Get products for a shop (public access)
   getShopProductsPublic: async (shopId: string): Promise<Product[]> => {
+    if (!isSupabaseConfigured()) {
+      console.warn('Supabase is not configured')
+      return []
+    }
+
     const { data, error } = await supabase
       .from('products')
       .select('*')
@@ -136,6 +166,11 @@ export const productDB = {
   },
   // Get products for a shop
   getShopProducts: async (shopId: string): Promise<Product[]> => {
+    if (!isSupabaseConfigured()) {
+      console.warn('Supabase is not configured')
+      return []
+    }
+
     const { data, error } = await supabase
       .from('products')
       .select('*')
@@ -153,6 +188,11 @@ export const productDB = {
 
   // Create product
   createProduct: async (productData: Omit<Product, 'id' | 'created_at' | 'updated_at'>): Promise<Product | null> => {
+    if (!isSupabaseConfigured()) {
+      console.warn('Supabase is not configured')
+      return null
+    }
+
     const { data, error } = await supabase
       .from('products')
       .insert(productData)
@@ -169,6 +209,11 @@ export const productDB = {
 
   // Update product
   updateProduct: async (productId: string, updates: Partial<Product>): Promise<Product | null> => {
+    if (!isSupabaseConfigured()) {
+      console.warn('Supabase is not configured')
+      return null
+    }
+
     const { data, error } = await supabase
       .from('products')
       .update(updates)
@@ -186,6 +231,11 @@ export const productDB = {
 
   // Delete product
   deleteProduct: async (productId: string): Promise<boolean> => {
+    if (!isSupabaseConfigured()) {
+      console.warn('Supabase is not configured')
+      return false
+    }
+
     const { error } = await supabase
       .from('products')
       .delete()
@@ -201,6 +251,11 @@ export const productDB = {
 
   // Reorder products
   reorderProducts: async (updates: { id: string; position: number }[]): Promise<boolean> => {
+    if (!isSupabaseConfigured()) {
+      console.warn('Supabase is not configured')
+      return false
+    }
+
     const { error } = await supabase
       .from('products')
       .upsert(updates.map(update => ({ id: update.id, position: update.position })))
@@ -218,6 +273,11 @@ export const productDB = {
 export const imageDB = {
   // Upload image to storage
   uploadImage: async (file: File, bucket: 'product-images' | 'banner-images', userId: string): Promise<string | null> => {
+    if (!isSupabaseConfigured()) {
+      console.warn('Supabase is not configured')
+      return null
+    }
+
     const fileExt = file.name.split('.').pop()
     const fileName = `${userId}/${Date.now()}.${fileExt}`
     
@@ -239,6 +299,11 @@ export const imageDB = {
 
   // Delete image from storage
   deleteImage: async (url: string, bucket: 'product-images' | 'banner-images'): Promise<boolean> => {
+    if (!isSupabaseConfigured()) {
+      console.warn('Supabase is not configured')
+      return false
+    }
+
     // Extract file path from URL
     const urlParts = url.split('/')
     const fileName = urlParts.slice(-2).join('/')
@@ -269,11 +334,19 @@ export const autoSave = {
 
   // Auto-save shop changes
   saveShop: async (shopId: string, data: Partial<Shop>): Promise<void> => {
+    if (!isSupabaseConfigured()) {
+      console.warn('Supabase is not configured')
+      return
+    }
     await shopDB.updateShop(shopId, data)
   },
 
   // Auto-save product changes
   saveProduct: async (productId: string, data: Partial<Product>): Promise<void> => {
+    if (!isSupabaseConfigured()) {
+      console.warn('Supabase is not configured')
+      return
+    }
     await productDB.updateProduct(productId, data)
   }
 }

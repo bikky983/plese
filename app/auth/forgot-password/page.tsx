@@ -9,7 +9,7 @@ import {
   CheckCircleIcon,
   ArrowLeftIcon
 } from "@heroicons/react/24/outline"
-import { auth } from "@/lib/supabase"
+import { auth, isSupabaseConfigured } from "@/lib/supabase"
 import { cn, isValidEmail } from "@/lib/utils"
 
 export default function ForgotPasswordPage() {
@@ -30,6 +30,10 @@ export default function ForgotPasswordPage() {
     }
 
     try {
+      if (!isSupabaseConfigured()) {
+        throw new Error("Authentication is not configured. Please contact support.")
+      }
+
       const { error } = await auth.resetPassword(email)
       if (error) throw error
       

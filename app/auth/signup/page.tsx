@@ -10,7 +10,7 @@ import {
   ExclamationCircleIcon,
   CheckCircleIcon
 } from "@heroicons/react/24/outline"
-import { auth } from "@/lib/supabase"
+import { auth, isSupabaseConfigured } from "@/lib/supabase"
 import { cn, isValidEmail } from "@/lib/utils"
 
 export default function SignupPage() {
@@ -77,6 +77,10 @@ export default function SignupPage() {
     }
 
     try {
+      if (!isSupabaseConfigured()) {
+        throw new Error("Authentication is not configured. Please contact support.")
+      }
+
       const { error } = await auth.signUp(formData.email, formData.password, {
         full_name: formData.fullName,
       })
@@ -96,6 +100,10 @@ export default function SignupPage() {
     setError("")
 
     try {
+      if (!isSupabaseConfigured()) {
+        throw new Error("Authentication is not configured. Please contact support.")
+      }
+
       const { error } = await auth.signInWithProvider("google")
       if (error) throw error
     } catch (error: any) {
