@@ -403,16 +403,4 @@ export function ShopSetupWizard({ userId, onComplete }: ShopSetupWizardProps) {
       </div>
     </div>
   )
-
-  function isStepValid() {
-    switch (currentStep) {
-      case 0:
-        return shopData.name.trim().length > 0
-      case 1:
-      case 2:
-        return true
-      default:
-        return false
-    }
-  }
 }
