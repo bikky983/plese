@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, Suspense } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
 import Link from "next/link"
 import { motion } from "framer-motion"
@@ -14,7 +14,7 @@ import {
 import { auth, isSupabaseConfigured } from "@/lib/supabase"
 import { cn } from "@/lib/utils"
 
-export default function ResetPasswordPage() {
+function ResetPasswordContent() {
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
@@ -100,40 +100,41 @@ export default function ResetPasswordPage() {
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5 }}
-        className="text-center"
       >
-        <div className="mb-8">
-          <div className="mx-auto flex items-center justify-center w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/20 mb-4">
-            <ExclamationCircleIcon className="w-6 h-6 text-red-600 dark:text-red-400" />
+        <div className="text-center">
+          <div className="mb-8">
+            <div className="mx-auto flex items-center justify-center w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/20 mb-4">
+              <ExclamationCircleIcon className="w-6 h-6 text-red-600 dark:text-red-400" />
+            </div>
+            <h2 className="text-3xl font-bold tracking-tight text-foreground">
+              Invalid Reset Link
+            </h2>
+            <p className="mt-2 text-sm text-muted-foreground">
+              This password reset link is invalid or has expired.
+            </p>
           </div>
-          <h2 className="text-3xl font-bold tracking-tight text-foreground">
-            Invalid Reset Link
-          </h2>
-          <p className="mt-2 text-sm text-muted-foreground">
-            This password reset link is invalid or has expired.
-          </p>
-        </div>
 
-        <div className="space-y-4">
-          <p className="text-sm text-muted-foreground">
-            Please request a new password reset link to continue.
-          </p>
-          
-          <div className="pt-4 space-y-3">
-            <Link
-              href="/auth/forgot-password"
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-primary-foreground bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors"
-            >
-              Request new reset link
-            </Link>
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Please request a new password reset link to continue.
+            </p>
             
-            <div>
+            <div className="pt-4 space-y-3">
               <Link
-                href="/auth/login"
-                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                href="/auth/forgot-password"
+                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-primary-foreground bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors"
               >
-                Back to login
+                Request new reset link
               </Link>
+              
+              <div>
+                <Link
+                  href="/auth/login"
+                  className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  Back to login
+                </Link>
+              </div>
             </div>
           </div>
         </div>
@@ -147,32 +148,33 @@ export default function ResetPasswordPage() {
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5 }}
-        className="text-center"
       >
-        <div className="mb-8">
-          <div className="mx-auto flex items-center justify-center w-12 h-12 rounded-full bg-green-100 dark:bg-green-900/20 mb-4">
-            <CheckCircleIcon className="w-6 h-6 text-green-600 dark:text-green-400" />
+        <div className="text-center">
+          <div className="mb-8">
+            <div className="mx-auto flex items-center justify-center w-12 h-12 rounded-full bg-green-100 dark:bg-green-900/20 mb-4">
+              <CheckCircleIcon className="w-6 h-6 text-green-600 dark:text-green-400" />
+            </div>
+            <h2 className="text-3xl font-bold tracking-tight text-foreground">
+              Password updated!
+            </h2>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Your password has been successfully updated.
+            </p>
           </div>
-          <h2 className="text-3xl font-bold tracking-tight text-foreground">
-            Password updated!
-          </h2>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Your password has been successfully updated.
-          </p>
-        </div>
 
-        <div className="space-y-4">
-          <p className="text-sm text-muted-foreground">
-            You'll be redirected to the login page in a moment...
-          </p>
-          
-          <div className="pt-4">
-            <Link
-              href="/auth/login"
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-primary-foreground bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors"
-            >
-              Continue to login
-            </Link>
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              You'll be redirected to the login page in a moment...
+            </p>
+            
+            <div className="pt-4">
+              <Link
+                href="/auth/login"
+                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-primary-foreground bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors"
+              >
+                Continue to login
+              </Link>
+            </div>
           </div>
         </div>
       </motion.div>
@@ -188,9 +190,9 @@ export default function ResetPasswordPage() {
       <div className="mb-8">
         <Link href="/" className="flex items-center space-x-2 mb-8">
           <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center">
-            <span className="text-primary-foreground font-bold text-sm">MT</span>
+            <span className="text-primary-foreground font-bold text-sm">SB</span>
           </div>
-          <span className="font-bold text-xl text-foreground">Modern Template</span>
+          <span className="font-bold text-xl text-foreground">Shop Builder</span>
         </Link>
         
         <h2 className="text-3xl font-bold tracking-tight text-foreground">
@@ -202,14 +204,10 @@ export default function ResetPasswordPage() {
       </div>
 
       {error && (
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="mb-6 p-4 rounded-lg bg-destructive/10 border border-destructive/20 flex items-center space-x-3"
-        >
+        <div className="mb-6 p-4 rounded-lg bg-destructive/10 border border-destructive/20 flex items-center space-x-3">
           <ExclamationCircleIcon className="h-5 w-5 text-destructive flex-shrink-0" />
           <p className="text-sm text-destructive">{error}</p>
-        </motion.div>
+        </div>
       )}
 
       <form onSubmit={handleResetPassword} className="space-y-6">
@@ -339,5 +337,25 @@ export default function ResetPasswordPage() {
         </Link>
       </div>
     </motion.div>
+  )
+}
+
+export default function ResetPasswordPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="max-w-md w-full space-y-8 p-8">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+            <h2 className="mt-6 text-3xl font-bold text-foreground">Loading...</h2>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Please wait while we load the password reset page.
+            </p>
+          </div>
+        </div>
+      </div>
+    }>
+      <ResetPasswordContent />
+    </Suspense>
   )
 }
