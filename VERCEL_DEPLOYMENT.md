@@ -1,6 +1,6 @@
-# 🚀 Vercel Deployment Guide
+# 🚀 Vercel Deployment Guide - UPDATED
 
-This guide will help you deploy your Shop Builder application to Vercel with optimal performance and configuration.
+This guide will help you deploy your Shop Builder application to Vercel. **Updated with troubleshooting for common deployment issues.**
 
 ## 📋 Prerequisites
 
@@ -113,34 +113,72 @@ Your deployment includes:
 
 ## 🛠️ Troubleshooting
 
-### Common Issues:
+### Common Issues & Solutions:
 
-#### Build Failures
-1. Check build logs in Vercel dashboard
-2. Ensure all dependencies are in `package.json`
-3. Verify environment variables are set correctly
+#### ❌ **404: DEPLOYMENT_NOT_FOUND Error**
+This error means Vercel can't find your deployment. Try these steps:
 
-#### Authentication Issues
-1. Verify redirect URLs in Supabase
-2. Check environment variables match Supabase project
+1. **Check Deployment Status**
+   - Go to your Vercel dashboard
+   - Verify the deployment actually exists
+   - Check if the build completed successfully
+
+2. **Verify Project Configuration**
+   - Ensure `vercel.json` only contains `{"framework": "nextjs"}`
+   - Make sure `next.config.js` exists (not `.ts`)
+   - Check that your repository is properly connected
+
+#### ❌ **Build Failures**
+1. Check build logs in Vercel dashboard for specific errors
+2. Test build locally: `npm run build`
+3. Ensure all dependencies are in `package.json`
+4. Verify TypeScript/ESLint errors are handled
+
+#### ❌ **Next.js Config Issues**
+- Use `next.config.js` (NOT `.ts` or `.mjs`)
+- Keep configuration minimal for initial deployment
+- Add optimizations after successful deployment
+
+#### ❌ **Authentication Issues**
+1. Verify redirect URLs in Supabase match your Vercel domain
+2. Check environment variables are correctly set in Vercel
 3. Ensure CORS settings allow your domain
-
-#### Image Loading Issues
-1. Add image domains to `next.config.ts`
-2. Check Supabase storage bucket policies
-3. Verify image URLs are accessible
 
 ### Debug Commands:
 ```bash
 # Test build locally
 npm run build
 
-# Check for linting issues
+# Check for linting issues (optional)
 npm run lint
 
-# Preview deployment
+# Deploy preview
 npm run deploy:preview
 ```
+
+### 🆘 **Emergency Deployment Steps**
+
+If you're still having issues, try this minimal approach:
+
+1. **Simplify vercel.json** to just:
+   ```json
+   {"framework": "nextjs"}
+   ```
+
+2. **Use minimal next.config.js**:
+   ```javascript
+   /** @type {import('next').NextConfig} */
+   const nextConfig = {
+     typescript: { ignoreBuildErrors: true },
+     eslint: { ignoreDuringBuilds: true }
+   };
+   module.exports = nextConfig;
+   ```
+
+3. **Deploy via Vercel Dashboard**:
+   - Import from GitHub
+   - Let Vercel auto-detect settings
+   - Add only essential environment variables
 
 ## 📱 Domain Configuration
 
